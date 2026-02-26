@@ -7,7 +7,32 @@ const JobSchema = new mongoose.Schema({
   description: String,
   email: String,
   domain: String,
-  riskScore: Number,
+
+  riskScore: {
+    type: Number,
+    default: 0
+  },
+
+  riskCategory: {
+    type: String,
+    default: "Safe"
+  },
+
+  explanations: {
+    type: [String],
+    default: []
+  },
+
+  flags: {
+    type: Object,
+    default: {}
+  },
+
+  status: {
+    type: String,
+    default: "PENDING"
+  },
+
   createdAt: {
     type: Date,
     default: Date.now
