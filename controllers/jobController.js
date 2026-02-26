@@ -5,7 +5,7 @@ exports.analyzeJob = async (req, res) => {
   try {
     const { title, company, salary, description, email, domain } = req.body;
 
-    // Run risk engine
+    // Run the risk engine
     const analysis = await riskEngine({
       title,
       company,
@@ -15,7 +15,7 @@ exports.analyzeJob = async (req, res) => {
       domain,
     });
 
-    // Save to DB
+    // Save job analysis to MongoDB
     const newJob = new Job({
       title,
       company,
@@ -25,6 +25,9 @@ exports.analyzeJob = async (req, res) => {
       domain,
       riskScore: analysis.riskScore,
       riskCategory: analysis.riskCategory,
+      verdict: analysis.verdict,
+      confidence: analysis.confidence,
+      humanExplanation: analysis.humanExplanation,
       explanations: analysis.explanations,
       flags: analysis.flags,
       status: "PENDING",
