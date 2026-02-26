@@ -1,5 +1,6 @@
 const domainVerifier = require("../modules/domainVerifier");
 const emailChecker = require("../modules/emailChecker");
+const { analyzeText } = require("../modules/textAnalyzer");
 
 module.exports = async function riskEngine(input) {
   let score = 0;
@@ -20,6 +21,23 @@ module.exports = async function riskEngine(input) {
 
     if (domainResult.flags && typeof domainResult.flags === "object") {
       Object.assign(flags, domainResult.flags);
+    }
+  }
+
+  // ================================
+  // 1️⃣.5 Text Analyzer Check
+  // ================================
+  const textResult = analyzeText(input.description || input.text || "");
+
+  if (textResult) {
+    score += Number(textResult.score || 0);
+
+    if (Array.isArray(textResult.reasons)) {
+      explanations.push(...textResult.reasons);
+    }
+
+    if (Array.isArray(textResult.flags)) {
+      flags.textAnalyzer = textResult.flags;
     }
   }
 
@@ -47,12 +65,7 @@ module.exports = async function riskEngine(input) {
 
   return {
     riskScore: score,
-    riskCategory:
-      score <= 35
-        ? "Safe"
-        : score <= 70
-        ? "Suspicious"
-        : "High Risk",
+    riskCategory: score <= 35 ? "Safe" : score <= 70 ? "Suspicious" : "High Risk",
     explanations,
     flags,
   };
