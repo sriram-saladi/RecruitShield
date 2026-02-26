@@ -1,29 +1,48 @@
 const Job = require("../models/Job");
+const riskEngine = require("../engine/riskEngine");
 
 exports.analyzeJob = async (req, res) => {
-  const { title, company, salary, description, email, domain } = req.body;
+  try {
+    const { title, company, salary, description, email, domain } = req.body;
 
-  let riskScore = 0;
+    // Run risk engine
+    const analysis = await riskEngine({
+      title,
+      company,
+      salary,
+      description,
+      email,
+      domain,
+    });
 
-  if (salary && salary.includes("1000000")) riskScore += 20;
-  if (description && description.toLowerCase().includes("urgent")) riskScore += 15;
-  if (email && email.includes("gmail")) riskScore += 20;
+    // Save to DB
+    const newJob = new Job({
+      title,
+      company,
+      salary,
+      description,
+      email,
+      domain,
+      riskScore: analysis.riskScore,
+      riskCategory: analysis.riskCategory,
+      explanations: analysis.explanations,
+      flags: analysis.flags,
+      status: "PENDING",
+    });
 
-  const newJob = new Job({
-    title,
-    company,
-    salary,
-    description,
-    email,
-    domain,
-    riskScore
-  });
+    await newJob.save();
 
-  await newJob.save();
+    res.json({
+      message: "Analysis Complete",
+      ...analysis,
+      status: "PENDING",
+    });
 
-  res.json({
-    message: "Analysis Complete",
-    riskScore,
-    status: riskScore > 30 ? "High Risk 🚨" : "Low Risk ✅"
-  });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      message: "Server error",
+      error: err.message,
+    });
+  }
 };
