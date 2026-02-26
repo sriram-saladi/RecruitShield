@@ -14,8 +14,23 @@ const JobSchema = new mongoose.Schema({
   },
 
   riskCategory: {
+    type: [String],   // Array of categories
+    default: []
+  },
+
+  verdict: {
     type: String,
-    default: "Safe"
+    default: "Pending"
+  },
+
+  confidence: {
+    type: String,
+    default: "Pending"
+  },
+
+  humanExplanation: {
+    type: String,
+    default: ""
   },
 
   explanations: {
