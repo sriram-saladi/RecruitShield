@@ -1,44 +1,38 @@
-const dns = require('dns');
-dns.setDefaultResultOrder('ipv4first');
-
-require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
-const cors = require("cors");
-
-const jobRoutes = require("./routes/jobRoutes");
+require("dotenv").config();
 
 const app = express();
-
-app.use(cors());
 app.use(express.json());
+
+// routes
+const jobRoutes = require("./routes/jobRoutes");
 app.use("/api/jobs", jobRoutes);
 
-app.get("/", (req, res) => {
-  res.send("SERVER IS THIS PROJECT");
-});
+const PORT = process.env.PORT || 5000;
+const MONGO_URI = process.env.MONGO_URI;
 
-console.log("Registered Routes:");
-app._router.stack.forEach(r => {
-  if (r.route && r.route.path) {
-    console.log(r.route.path);
-  }
-});
-
-console.log("ENV VALUE:", process.env.MONGO_URI);
-
-async function startServer() {
+async function start() {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log("MongoDB Connected");
+    if (!MONGO_URI) {
+      throw new Error("MONGO_URI is undefined. Check .env in project root.");
+    }
 
-    app.listen(5000, () => {
-      console.log("Server running on port 5000");
+    console.log("ENV VALUE:", MONGO_URI);
+
+    await mongoose.connect(MONGO_URI, {
+      serverSelectionTimeoutMS: 10000,
     });
 
-  } catch (error) {
-    console.error("MongoDB Connection Error:", error);
+    console.log("MongoDB Connected ✅");
+
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  } catch (err) {
+    console.error("MongoDB connection error:", err.message);
+    process.exit(1);
   }
 }
 
-startServer();
+start();
