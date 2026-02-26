@@ -1,33 +1,58 @@
 const domainVerifier = require("../modules/domainVerifier");
+const emailChecker = require("../modules/emailChecker");
 
 module.exports = async function riskEngine(input) {
   let score = 0;
   const explanations = [];
   const flags = {};
 
-  const result = domainVerifier(input);
+  // ================================
+  // 1️⃣ Domain Verification Check
+  // ================================
+  const domainResult = domainVerifier(input);
 
-  if (result) {
-    score += Number(result.score || 0);
+  if (domainResult) {
+    score += Number(domainResult.score || 0);
 
-    if (Array.isArray(result.reasons)) {
-      explanations.push(...result.reasons);
+    if (Array.isArray(domainResult.reasons)) {
+      explanations.push(...domainResult.reasons);
     }
 
-    if (result.flags && typeof result.flags === "object") {
-      Object.assign(flags, result.flags);
+    if (domainResult.flags && typeof domainResult.flags === "object") {
+      Object.assign(flags, domainResult.flags);
     }
   }
 
-  // Clamp score between 0 and 100
+  // ================================
+  // 2️⃣ Email Verification Check
+  // ================================
+  const emailResult = emailChecker(input);
+
+  if (emailResult) {
+    score += Number(emailResult.score || 0);
+
+    if (Array.isArray(emailResult.reasons)) {
+      explanations.push(...emailResult.reasons);
+    }
+
+    if (emailResult.flags && typeof emailResult.flags === "object") {
+      Object.assign(flags, emailResult.flags);
+    }
+  }
+
+  // ================================
+  // Final Score Normalization
+  // ================================
   score = Math.max(0, Math.min(100, score));
 
   return {
     riskScore: score,
     riskCategory:
-      score <= 35 ? "Safe" :
-      score <= 70 ? "Suspicious" :
-      "High Risk",
+      score <= 35
+        ? "Safe"
+        : score <= 70
+        ? "Suspicious"
+        : "High Risk",
     explanations,
     flags,
   };
