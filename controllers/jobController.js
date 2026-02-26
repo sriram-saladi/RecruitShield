@@ -6,7 +6,11 @@ exports.analyzeJob = async (req, res) => {
   try {
     const { title, company, salary, description, email, domain } = req.body;
 
+<<<<<<< HEAD
+    // Run the risk engine
+=======
     // 1) Run risk engine
+>>>>>>> be9337b5e724e583f2fec52d793bde0ce9b31a1a
     const analysis = await riskEngine({
       title,
       company,
@@ -16,6 +20,9 @@ exports.analyzeJob = async (req, res) => {
       domain,
     });
 
+<<<<<<< HEAD
+    // Save job analysis to MongoDB
+=======
     // 2) Apply ScamSignals boost
     const scamResult = await applyScamSignals({ domain, email, description });
 
@@ -32,6 +39,7 @@ exports.analyzeJob = async (req, res) => {
     else analysis.riskCategory = "Safe";
 
     // 3) Save to DB (save updated analysis)
+>>>>>>> be9337b5e724e583f2fec52d793bde0ce9b31a1a
     const newJob = new Job({
       title,
       company,
@@ -41,6 +49,9 @@ exports.analyzeJob = async (req, res) => {
       domain,
       riskScore: analysis.riskScore,
       riskCategory: analysis.riskCategory,
+      verdict: analysis.verdict,
+      confidence: analysis.confidence,
+      humanExplanation: analysis.humanExplanation,
       explanations: analysis.explanations,
       flags: analysis.flags,
       status: "PENDING",
