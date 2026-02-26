@@ -30,7 +30,7 @@ exports.analyzeJob = async (req, res) => {
     else if (analysis.riskScore >= 30) analysis.riskCategory = "Suspicious";
     else analysis.riskCategory = "Safe";
 
-    // 3) Save job analysis to MongoDB
+    // 3) Save to DB
     const newJob = new Job({
       title,
       company,
