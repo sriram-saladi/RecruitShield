@@ -31,3 +31,5 @@ build/
 
 # Optional: Mongo local data if any
 data/
+
+desktop.ini
