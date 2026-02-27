@@ -9,45 +9,40 @@ module.exports = async function riskEngine(input = {}) {
   const flags = {};
 
   try {
-    // Run main modules asynchronously
-    const moduleResults = await Promise.all([
-      domainVerifier(input),
-      aiClassifier(input),
-    ]);
+    // Run modules safely
+    const domainResult = domainVerifier(input);
+    const aiResult = aiClassifier(input);
+    const textResult = analyzeText(input.description || "");
+    const emailResult = emailChecker(input);
 
-    moduleResults.forEach(result => {
-      if (!result || typeof result !== "object") return;
+    const results = [domainResult, aiResult, textResult, emailResult];
+
+    results.forEach(result => {
+      if (!result) return;
+
       score += Number(result.score || 0);
-      if (Array.isArray(result.reasons)) explanations.push(...result.reasons);
-      if (result.flags && typeof result.flags === "object") Object.assign(flags, result.flags);
+
+      if (Array.isArray(result.reasons)) {
+        explanations.push(...result.reasons);
+      }
+
+      if (result.flags && typeof result.flags === "object") {
+        Object.assign(flags, result.flags);
+      }
     });
 
-    // Text Analyzer
-    const textResult = analyzeText(input.description || input.text || "");
-    if (textResult) {
-      score += Number(textResult.score || 0);
-      if (Array.isArray(textResult.reasons)) explanations.push(...textResult.reasons);
-      if (Array.isArray(textResult.flags)) flags.textAnalyzer = textResult.flags;
-    }
-
-    // Email Checker
-    const emailResult = emailChecker(input);
-    if (emailResult) {
-      score += Number(emailResult.score || 0);
-      if (Array.isArray(emailResult.reasons)) explanations.push(...emailResult.reasons);
-      if (emailResult.flags && typeof emailResult.flags === "object") Object.assign(flags, emailResult.flags);
-    }
-
   } catch (error) {
-    console.error("Risk Engine Error:", error.message);
+    console.error("Risk Engine Error:", error);
   }
 
-  // Clamp score 0–100
   score = Math.max(0, Math.min(100, score));
 
   return {
     riskScore: score,
-    riskCategory: score <= 35 ? "Safe" : score <= 70 ? "Suspicious" : "High Risk",
+    riskCategory:
+      score <= 35 ? "Safe" :
+      score <= 70 ? "Suspicious" :
+      "High Risk",
     explanations,
     flags,
   };

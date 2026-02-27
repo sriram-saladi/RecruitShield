@@ -1,14 +1,18 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const cors = require("cors");
 require("dotenv").config();
 
 const app = express();
+
+// 🔥 ADD THIS LINE
+app.use(cors());
+
 app.use(express.json());
 
 // routes
 const jobRoutes = require("./routes/jobRoutes");
 app.use("/api/jobs", jobRoutes);
-
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;
 
