@@ -6,11 +6,9 @@ module.exports = function emailChecker(input) {
   const { email, company, domain } = input;
 
   if (!email) {
-    score += 25;
-    reasons.push("No official email provided.");
-    flags.missingEmail = true;
-    return { score, reasons, flags };
-  }
+  // Don't punish if email not provided
+  return { score: 0, reasons: [], flags: {} };
+}
 
   const emailLower = email.toLowerCase();
 
